@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TV Guide Viewer</title>
+    <style>
+        /* CSS from style.css */
+        #tvGuideContainer {
+            width: 50%;
+            line-height: 0.5;
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            padding: 10px;
+            
+        }
+
+        #programDetails {
+            color: #fdbd33; /* Text color */
+            font-family: 'Poppins', sans-serif;
+            font-weight: 200;            
+            background-color: #0c0c0d; /* Background color */
+            padding: 15px; /* Add some padding */
+            border-radius: 0px; /* Optional: rounded corners */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: add some shadow for depth */
+        }
+
+        .program {
+            border: 1px solid #ddd;
+            height: 80%;
+            padding: 10px;
+            background: linear-gradient(to right, #131414, #313233);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .program h3 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #fdbd33;
+        }
+
+        .program p {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 200;
+            color: #FFFFFF;
+        }
+
+        .program:hover {
+            background: #0c0c0d;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 7;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 0% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Progress Bar Styles */
+        .progress {
+            background-color: #186dff;
+            border-radius: 5px;
+            position: relative;
+            height: 10px;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            background-color: #fdbd33;
+            height: 100%;
+            border-radius: 2px;
+        }
+        .now-playing {
+            color: red;
+            animation: flashingText 1s linear infinite;
+        }
+
+        @keyframes flashingText {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+        }
+        .video-js {
+            margin: auto;
+        }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;600&display=swap" rel="stylesheet">
+    <link href="https://player.5centscdn.com/videojs/7.7.6/video-js.min.css" rel="stylesheet" />
+</head>
+<body>
+    <meta charset="UTF-8">
+    <title>TV Guide Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;600&display=swap" rel="stylesheet">
+      <link href="https://player.5centscdn.com/videojs/7.7.6/video-js.min.css" rel="stylesheet" />
+  <style type="text/css">
+    html, body {margin: 10;padding: 10;background-color: #186dff;}
+    .video-js.vjs-hls-quality-selector{display:block}
+    .vjs-menu-button-popup .vjs-menu .vjs-menu-content{max-height:20em;}
+     @media screen and (orientation:portrait) {
+      .video-js{width:60vw;height:20vh;}
+     }
+     @media screen and (orientation:landscape) {
+      .video-js{width:50vw;height:60vh;}
+     }
+  </style>
+  <script src="https://player.5centscdn.com/videojs/ie8/1.1.2/videojs-ie8.min.js"></script>
+  <!-- jQuery library, include only once in the website -->
+  <script src="https://player.5centscdn.com/videojs/jquery-3.2.1.slim.min.js"></script>
+ 
+
+  <!-- Add following <video> tag in the page's <body> tag, where you need the player to be shown -->
+  <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" muted autoplay controls preload="auto">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a web browser that<a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+  </video>
+
+  <!-- Add following section before </body> tag -->
+  <script src="https://player.5centscdn.com/videojs/7.7.6/video.min.js"></script>
+  <script src="https://player.5centscdn.com/videojs/videojs-contrib-quality-levels.min.js"></script>
+  <script src="https://player.5centscdn.com/videojs/videojs-hls-quality-selector.min.js"></script>
+  <script src="https://player.5centscdn.com/videojs/videojs.hotkeys.min.js"></script>
+  
+  <script type="text/javascript">
+    let player = {};
+    $(document).ready(function () {
+      player = videojs('my-video', {
+        fit: true,
+        responsive: true,
+        controls: true,
+        liveui: true,
+        techOrder: ["html5"],
+        html5: {
+          hls: {
+            overrideNative: true,
+            enableLowInitialPlaylist: true,
+            useBandwidthFromLocalStorage: true,
+            allowSeeksWithinUnsafeLiveWindow:true,
+          },
+          nativeAudioTracks: false,
+          nativeVideoTracks: false,
+          nativeControlsForTouch: false,
+        },
+        plugins: {
+                  },
+        sources: [{
+          type: "application/x-mpegurl",
+          src: "https://cdn.scbcmedia.com/scbctelevision/c9a1fdac6e082dd89e7173244f34d7b3.sdp/playlist.m3u8"
+        }],
+      }, function () {
+        this.reloadSourceOnError();
+
+        this.hlsQualitySelector({
+          displayCurrentQuality: true,
+        });
+
+        this.hotkeys({
+          volumeStep: 0.1,
+          seekStep: 5,
+          enableModifiersForNumbers: false,
+          alwaysCaptureHotkeys: true,
+        });
+
+        setTimeout(function () {
+          player.play();
+        }, 750);
+      });
+    });
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1923969311843370"
+     crossorigin="anonymous"></script>
+
+</head>
+<body>   
+    <div id="tvGuideContainer">
+        <!-- TV guide entries will be populated here -->
+    </div>
+
+    <!-- Modal for displaying program details -->
+    <div id="programModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="programDetails"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+    <script>
+        // JavaScript from script.js
+document.addEventListener('DOMContentLoaded', function() {
+    const tvGuideContainer = document.getElementById('tvGuideContainer');
+    const programModal = document.getElementById('programModal');
+    const programDetails = document.getElementById('programDetails');
+    const closeModal = document.getElementsByClassName("close")[0];
+    const xmltvUrl = 'https://raw.githubusercontent.com/digitalp/scbcguide/main/scbcguide.xml';
+    const timezoneOffset = -60; // +0100 timezone in minutes
+    let relevantPrograms = [];
+
+    fetchAndPopulateGuide();
+    setInterval(fetchAndPopulateGuide, 60000); // Refresh guide every minute
+
+    function fetchAndPopulateGuide() {
+        fetch(xmltvUrl)
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, "text/xml");
+                populateTvGuide(xmlDoc);
+            });
+    }
+
+    function populateTvGuide(xmlDoc) {
+        tvGuideContainer.innerHTML = ''; // Clear existing entries
+        relevantPrograms = [];
+        const programs = Array.from(xmlDoc.getElementsByTagName('programme'));
+        const currentTime = new Date();
+
+        programs.sort((a, b) => parseXMLDate(a.getAttribute('start')) - parseXMLDate(b.getAttribute('start')));
+
+        for (let program of programs) {
+            const startTime = parseXMLDate(program.getAttribute('start'));
+            const endTime = parseXMLDate(program.getAttribute('stop'));
+
+            if ((startTime <= currentTime && endTime > currentTime) || startTime > currentTime) {
+                relevantPrograms.push(program);
+                if (relevantPrograms.length >= 2) break;
+            }
+        }
+
+        relevantPrograms.forEach((program, index) => {
+            addProgramToGuide(program, index);
+        });
+        updateProgressBars(); // Update progress bars and time left after populating guide
+    }
+
+function addProgramToGuide(program, index) {
+    const title = program.getElementsByTagName('title')[0].textContent;
+    const subtitleElements = program.getElementsByTagName('sub-title');
+    const subtitle = subtitleElements.length > 0 ? subtitleElements[0].textContent : '';
+    const startTime = parseXMLDate(program.getAttribute('start'));
+    const endTime = parseXMLDate(program.getAttribute('stop'));
+    const currentTime = new Date();
+    const formattedStartTime = formatTime(startTime);
+    const formattedEndTime = formatTime(endTime);
+    const isCurrent = currentTime >= startTime && currentTime < endTime;
+    const timeLeft = isCurrent ? calculateTimeLeft(currentTime, endTime) : '';
+    const nowPlayingText = isCurrent ? '<p class="now-playing">Now Playing</p>' : '';
+    const progressBar = isCurrent ? `<div class="progress"><div class="progress-bar" style="width: ${calculateProgress(startTime, endTime)}%;"></div></div>` : '';
+    const desc = program.getElementsByTagName('desc')[0]?.textContent || 'No description available';
+
+    const programElement = document.createElement('div');
+    programElement.classList.add('program');
+    programElement.dataset.index = index;
+    programElement.innerHTML = `${nowPlayingText}<h3>${title}</h3>
+                                    ${subtitle ? `<p style="font-style: italic;">${subtitle}</p>` : ''}
+                                    <p>${formattedStartTime} - ${formattedEndTime}</p>
+                                    ${isCurrent ? `<p class='time-left'>Time Left: ${timeLeft} mins</p>` : ''}
+                                    ${progressBar}`;                                    
+    programElement.addEventListener('click', function() {
+        programDetails.innerHTML = `<h2>${title}</h2>${subtitle ? `<p style="font-style: italic;">${subtitle}</p>` : ''}<p>${desc}</p>`;
+        programModal.style.display = "block";
+    });
+    tvGuideContainer.appendChild(programElement);
+}
+
+
+    function formatTime(date) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function calculateTimeLeft(currentTime, endTime) {
+        const difference = endTime - currentTime;
+        return Math.round(difference / 60000); // Convert milliseconds to minutes
+    }
+
+    function calculateProgress(startTime, endTime) {
+        const currentTime = new Date();
+        if (currentTime < startTime) {
+            return 0; // Program hasn't started yet
+        } else if (currentTime > endTime) {
+            return 100; // Program has finished
+        } else {
+            const totalDuration = endTime - startTime;
+            const elapsed = currentTime - startTime;
+            return (elapsed / totalDuration) * 100;
+        }
+    }
+
+    function updateProgressBars() {
+        const currentTime = new Date();
+        const programs = tvGuideContainer.getElementsByClassName('program');
+        for (let programElement of programs) {
+            const index = programElement.dataset.index;
+            const program = relevantPrograms[index];
+            const startTime = parseXMLDate(program.getAttribute('start'));
+            const endTime = parseXMLDate(program.getAttribute('stop'));
+            if (currentTime >= startTime && currentTime < endTime) {
+                const progress = calculateProgress(startTime, endTime);
+                const timeLeft = calculateTimeLeft(currentTime, endTime);
+                const progressBar = programElement.getElementsByClassName('progress-bar')[0];
+                const timeLeftElement = programElement.getElementsByClassName('time-left')[0];
+                if (timeLeftElement) {
+                    timeLeftElement.textContent = `Time Left: ${timeLeft} mins`;
+                }
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }
+        }
+    }
+
+    function parseXMLDate(xmlDate) {
+        const pattern = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/;
+        const [, year, month, day, hours, minutes] = xmlDate.match(pattern);
+        const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
+        date.setMinutes(date.getMinutes() + timezoneOffset);
+        return date;
+    }
+
+    closeModal.addEventListener('click', function() {
+        programModal.style.display = "none";
+    });
+
+    window.onclick = function(event) {
+        if (event.target == programModal) {
+            programModal.style.display = "none";
+        }
+    }
+});
+    </script>
+</body>
+</html>
